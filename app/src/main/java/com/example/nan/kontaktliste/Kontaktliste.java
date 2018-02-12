@@ -15,8 +15,7 @@ import static android.Manifest.permission.READ_CONTACTS;
 public class Kontaktliste extends Activity {
     private static final int REQUEST_READ_CONTACTS = 444;
 
-    Cursor cursor;
-    int counter;
+    String bruker = "anne_bernt@hotmail.com";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -28,7 +27,7 @@ public class Kontaktliste extends Activity {
 
             @Override
             public void run() {
-                getContacts("amundeb@gmail.com");
+                getContacts(bruker);
             }
         }).start();
     }
@@ -48,15 +47,13 @@ public class Kontaktliste extends Activity {
         return false;
     }
 
-    /**
-     * Callback received when a permissions request has been completed.
-     */
+    //First time when the request is granted
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions,
                                            int[] grantResults) {
         if (requestCode == REQUEST_READ_CONTACTS) {
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getContacts("amundeb@gmail.com");
+                getContacts(bruker);
             }
         }
     }
@@ -69,29 +66,18 @@ public class Kontaktliste extends Activity {
         }
 
         //declarations
+        Cursor cursor;
+        TextView text;
+
         String DISPLAY_NAME = ContactsContract.Contacts.DISPLAY_NAME;
         Uri EmailCONTENT_URI = ContactsContract.CommonDataKinds.Email.CONTENT_URI;
         String ADDRESS = ContactsContract.CommonDataKinds.Email.ADDRESS;
 
-        String output = "";
-
         ContentResolver contentResolver = getContentResolver();
-        cursor = contentResolver.query(EmailCONTENT_URI, null, null, null, null);
-
-        // Iterate every contact with email in the phone
-        if (cursor.getCount() > 0) {
-            counter = 0;
-
-            while (cursor.moveToNext()) {
-                String name = cursor.getString(cursor.getColumnIndex(DISPLAY_NAME));
-                String address = cursor.getString(cursor.getColumnIndex(ADDRESS));
-
-                if (address.equals(mail)) {
-                    output += "\n Name: " + name;
-                    TextView text = findViewById(R.id.textView3);
-                    text.append(output);
-                }
-            }
-        }
+        cursor = contentResolver.query(EmailCONTENT_URI, null, ADDRESS + " = '" + mail +"'", null, null);
+        cursor.moveToNext();
+        text = findViewById(R.id.textView3);
+        String name = cursor.getString(cursor.getColumnIndex(DISPLAY_NAME));
+        text.append(name);
     }
 }
